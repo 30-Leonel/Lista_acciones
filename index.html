@@ -1,0 +1,1636 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Mis Tareas y Apuntes</title>
+<style>
+  :root {
+    --bg: #f4f6fb;
+    --card: #ffffff;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --line: #e5e7eb;
+    --primary: #4f46e5;
+    --primary-soft: #eef2ff;
+    --ok: #16a34a;
+    --warn: #f59e0b;
+    --warn-soft: #fef3c7;
+    --bad: #ef4444;
+    --code-bg: #0f172a;
+    --radius: 14px;
+    --shadow: 0 1px 3px rgba(0,0,0,.08), 0 4px 14px rgba(0,0,0,.04);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1220;
+      --card: #1a1e33;
+      --text: #e8eaf6;
+      --muted: #9aa3c0;
+      --line: #2b3050;
+      --primary: #818cf8;
+      --primary-soft: #262b4d;
+      --ok: #4ade80;
+      --warn: #fbbf24;
+      --warn-soft: #332815;
+      --bad: #f87171;
+      --code-bg: #0a0d1a;
+      --shadow: 0 1px 3px rgba(0,0,0,.4);
+    }
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; line-height: 1.4;
+  }
+  header { padding: 16px 16px 6px; max-width: 1100px; margin: 0 auto; }
+  header h1 { margin: 0; font-size: 1.4rem; }
+  header p { margin: 4px 0 0; color: var(--muted); font-size: .9rem; }
+
+  .tabs-wrap { position: sticky; top: 0; z-index: 20; background: var(--bg); padding: 8px 0 6px; border-bottom: 1px solid var(--line); }
+  .tabs { max-width: 1100px; margin: 0 auto; padding: 0 12px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+  .tab-btn {
+    background: var(--card); color: var(--muted); box-shadow: var(--shadow);
+    min-height: 52px; padding: 4px 2px; font-size: .72rem; font-weight: 700;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+  }
+  .tab-btn span { font-size: 1.15rem; line-height: 1; }
+  .tab-btn[aria-selected="true"] { background: var(--primary); color: #fff; }
+  @media (min-width: 640px) { .tab-btn { flex-direction: row; gap: 8px; font-size: .9rem; min-height: 46px; } }
+
+  .datebar { max-width: 1100px; margin: 8px auto 0; padding: 0 16px; display: flex; align-items: center; gap: 8px; }
+  .datebar h2 { flex: 1; margin: 0; text-align: center; font-size: 1.05rem; }
+  .datebar h2::first-letter { text-transform: uppercase; }
+  .tag { display: inline-block; font-size: .7rem; background: var(--primary-soft); color: var(--primary); padding: 2px 8px; border-radius: 99px; margin-left: 6px; vertical-align: middle; font-weight: 700; }
+  .today-btn { background: var(--primary-soft); color: var(--primary); font-weight: 700; min-height: 40px; padding: 0 12px; font-size: .85rem; }
+
+  main { max-width: 1100px; margin: 0 auto; padding: 12px 14px 70px; }
+  .tab { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  @media (min-width: 900px) { .tab { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; } .span2 { grid-column: 1 / -1; } }
+  .col { display: grid; gap: 14px; min-width: 0; }
+  .card { background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 15px; min-width: 0; }
+  .card h2 { margin: 0 0 10px; font-size: 1.08rem; }
+  .card h3 { margin: 16px 0 8px; font-size: .95rem; }
+  .hint { color: var(--muted); font-size: .82rem; margin: 6px 0 0; }
+  .empty { color: var(--muted); text-align: center; padding: 14px 8px; font-size: .9rem; }
+
+  form { display: grid; gap: 10px; }
+  .row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; align-items: end; }
+  label { display: grid; gap: 4px; min-width: 0; font-size: .82rem; color: var(--muted); font-weight: 600; }
+  input, select, textarea {
+    font: inherit; font-size: 1rem; color: var(--text); background: var(--bg);
+    border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; width: 100%; min-height: 44px;
+  }
+  textarea { resize: vertical; min-height: 86px; line-height: 1.45; }
+  input:focus, select:focus, textarea:focus, button:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
+  button { font: inherit; cursor: pointer; border: 0; border-radius: 10px; touch-action: manipulation; }
+  .btn-main { background: var(--primary); color: #fff; font-weight: 700; min-height: 46px; padding: 0 14px; }
+  .btn-main:hover { filter: brightness(1.08); }
+  .btn-sec { background: var(--primary-soft); color: var(--primary); font-weight: 700; min-height: 44px; padding: 0 12px; }
+  .btn-sec:hover { filter: brightness(.97); }
+  .btn-warn { background: var(--warn-soft); color: var(--text); border: 1px solid var(--warn); font-weight: 700; min-height: 44px; padding: 0 12px; }
+  .btn-sm { min-height: 36px; padding: 0 10px; font-size: .8rem; }
+  .btn-danger { background: transparent; color: var(--bad); font-weight: 700; min-height: 40px; padding: 0 10px; }
+  .icon-btn { background: var(--primary-soft); color: var(--primary); width: 42px; height: 42px; font-size: 1.2rem; font-weight: 700; flex: none; }
+  .del { background: transparent; color: var(--muted); width: 36px; height: 36px; font-size: 1.05rem; flex: none; }
+  .del:hover { color: var(--bad); }
+  .link { background: none; color: var(--primary); padding: 6px 0; font-weight: 700; text-decoration: underline; }
+  .error { color: var(--bad); font-size: .85rem; min-height: 1.1em; margin: 0; }
+  .add-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+
+  /* Categoría Badges */
+  .cat-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: .74rem; font-weight: 700; padding: 3px 9px; border-radius: 99px;
+    background: var(--primary-soft); color: var(--primary);
+  }
+  .cat-badge.cat-comunicacion { background: #dcfce7; color: #166534; }
+  .cat-badge.cat-aprendizaje { background: #fef3c7; color: #92400e; }
+  .cat-badge.cat-programacion { background: #e0e7ff; color: #3730a3; }
+  .cat-badge.cat-productividad { background: #fce7f3; color: #9d174d; }
+  @media (prefers-color-scheme: dark) {
+    .cat-badge.cat-comunicacion { background: #14532d; color: #86efac; }
+    .cat-badge.cat-aprendizaje { background: #451a03; color: #fcd34d; }
+    .cat-badge.cat-programacion { background: #1e1b4b; color: #a5b4fc; }
+    .cat-badge.cat-productividad { background: #500724; color: #f9a8d4; }
+  }
+
+  /* Ancla / Recordatorio de práctica */
+  .anchor-card {
+    background: var(--primary-soft);
+    border: 1px solid color-mix(in srgb, var(--primary) 30%, transparent);
+    border-radius: var(--radius);
+    padding: 14px;
+  }
+  .anchor-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .anchor-head b { font-size: .92rem; color: var(--primary); }
+  .anchor-title { font-weight: 800; font-size: .98rem; margin-bottom: 6px; }
+  .anchor-steps { display: grid; gap: 6px; margin-top: 8px; }
+  .anchor-step {
+    display: flex; align-items: center; gap: 8px; background: var(--card);
+    padding: 8px 10px; border-radius: 10px; font-size: .88rem;
+  }
+  .anchor-step span { flex: 1; min-width: 0; word-break: break-word; }
+
+  /* Progreso */
+  .pr-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+  .pr-big { font-size: 1.9rem; font-weight: 800; color: var(--primary); line-height: 1; }
+  .streak { font-weight: 800; color: var(--warn); }
+  .meter { height: 10px; background: var(--line); border-radius: 99px; overflow: hidden; }
+  .meter i { display: block; height: 100%; width: 0; background: var(--primary); border-radius: 99px; transition: width .35s; }
+  .meter i.ok { background: var(--ok); }
+  .banner { margin: 12px 0 0; padding: 10px 12px; background: var(--primary-soft); border-radius: 10px; font-weight: 700; font-size: .92rem; }
+
+  /* Tareas */
+  .list { display: grid; gap: 8px; margin-top: 12px; }
+  .task { display: flex; align-items: center; gap: 10px; padding: 10px 8px 10px 10px; border: 1px solid var(--line); border-radius: 12px; }
+  .task.done { background: var(--primary-soft); }
+  .chk {
+    width: 30px; height: 30px; flex: none; border-radius: 9px; border: 2px solid var(--muted);
+    background: transparent; color: #fff; font-weight: 800; font-size: 1.05rem; line-height: 1; padding: 0;
+  }
+  .chk[aria-checked="true"] { background: var(--ok); border-color: var(--ok); }
+  .t-main { flex: 1; min-width: 0; cursor: pointer; }
+  .t-text { word-break: break-word; font-weight: 600; }
+  .task.done .t-text { text-decoration: line-through; opacity: .6; }
+  .t-meta { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; align-items: center; }
+  .chip { display: inline-block; font-size: .74rem; font-weight: 700; padding: 3px 10px; border-radius: 99px; background: var(--primary-soft); color: var(--primary); }
+  button.chip { min-height: 34px; border-radius: 99px; }
+  .chip.sel { background: var(--primary); color: #fff; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chips .chip { font-size: .82rem; padding: 6px 12px; min-height: 36px; }
+  .carry { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-top: 1px solid var(--line); }
+  .carry:first-of-type { border-top: 0; }
+  .carry .c-text { flex: 1; min-width: 0; word-break: break-word; font-size: .92rem; }
+  .carry small { color: var(--muted); display: block; }
+
+  /* Retos y Pasos de Videos */
+  .habit { border: 1px solid var(--line); border-radius: 12px; padding: 12px; display: grid; gap: 10px; }
+  .habit.done { border-color: var(--ok); background: color-mix(in srgb, var(--ok) 8%, transparent); }
+  .h-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .h-name { font-weight: 800; word-break: break-word; }
+  .h-sub { color: var(--muted); font-size: .85rem; }
+  .counter { display: flex; align-items: center; gap: 8px; }
+  .counter button { width: 46px; height: 46px; font-size: 1.5rem; font-weight: 800; line-height: 1; padding: 0; }
+  .counter .minus { background: var(--primary-soft); color: var(--primary); }
+  .counter .plus { background: var(--primary); color: #fff; }
+  .counter button:disabled { opacity: .4; cursor: default; }
+  .counter .num { min-width: 36px; text-align: center; font-size: 1.4rem; font-weight: 800; }
+  .h-note { display: grid; gap: 6px; }
+  .h-note-saved { font-size: .85rem; color: var(--muted); background: var(--bg); border-radius: 8px; padding: 6px 10px; word-break: break-word; }
+  .h-edit { display: grid; gap: 10px; }
+  .days { display: flex; gap: 6px; }
+  .day-btn { flex: 1; min-height: 40px; background: var(--bg); color: var(--muted); border: 1px solid var(--line); font-weight: 700; font-size: .8rem; padding: 0; }
+  .day-btn[aria-pressed="true"] { background: var(--primary); border-color: var(--primary); color: #fff; }
+
+  /* Bloque de pasos por video en Retos */
+  .video-steps-box {
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 12px;
+    background: var(--bg);
+    display: grid;
+    gap: 8px;
+  }
+  .vsb-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .vsb-title { font-weight: 800; font-size: .95rem; }
+  .vsb-step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--card);
+    padding: 8px 10px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+  }
+  .vsb-step.done span { text-decoration: line-through; opacity: .6; }
+  .vsb-step span { flex: 1; min-width: 0; word-break: break-word; font-size: .88rem; }
+
+  /* Apuntes - Vista rápida móvil */
+  .n-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+  .n-head h2 { margin: 0; }
+  .note-card {
+    background: var(--card); color: var(--text); border: 1px solid var(--line);
+    border-radius: 12px; padding: 14px; display: grid; gap: 8px;
+  }
+  .nc-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+  .nc-title { font-weight: 800; font-size: 1.02rem; word-break: break-word; }
+  .nc-meta { color: var(--muted); font-size: .8rem; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 3px; }
+  .nc-text { font-size: .88rem; color: var(--muted); word-break: break-word; margin: 0; }
+  .nc-steps-preview {
+    background: var(--bg); border-radius: 10px; padding: 8px 10px;
+    display: grid; gap: 6px; margin-top: 2px;
+  }
+  .nc-step-mini { display: flex; align-items: center; gap: 8px; font-size: .86rem; }
+  .nc-step-mini .chk { width: 24px; height: 24px; font-size: .85rem; }
+  .nc-step-mini.done span { text-decoration: line-through; opacity: .6; }
+  .nc-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; align-items: center; }
+  .nc-badges { display: flex; flex-wrap: wrap; gap: 6px; }
+
+  .e-top { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .e-top .grow { flex: 1; font-size: .8rem; color: var(--muted); text-align: right; }
+  .step { display: flex; align-items: center; gap: 8px; padding: 10px 0; border-top: 1px solid var(--line); flex-wrap: wrap; }
+  .step:first-child { border-top: 0; }
+  .step .s-text { flex: 1 1 160px; min-width: 0; word-break: break-word; cursor: pointer; font-weight: 500; }
+  .step.done .s-text { text-decoration: line-through; opacity: .6; }
+  .step .chk { width: 28px; height: 28px; font-size: .95rem; }
+  .step-btns { display: flex; gap: 4px; align-items: center; margin-left: auto; }
+
+  .snip { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; margin-bottom: 10px; }
+  .snip-head { display: flex; align-items: center; gap: 6px; padding: 8px 8px 8px 12px; background: var(--primary-soft); }
+  .snip-head b { flex: 1; min-width: 0; word-break: break-word; font-size: .9rem; }
+  pre.code {
+    margin: 0; padding: 12px; background: var(--code-bg); color: #e2e8f0; overflow-x: auto;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .85rem; line-height: 1.5; white-space: pre; tab-size: 2;
+  }
+  textarea.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .9rem; }
+  .open-link { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; color: var(--primary); text-decoration: none; background: var(--primary-soft); padding: 8px 12px; border-radius: 10px; font-size: .86rem; }
+
+  /* Repaso */
+  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .stat { background: var(--primary-soft); border-radius: 12px; padding: 12px; }
+  .stat small { color: var(--muted); font-size: .75rem; font-weight: 600; }
+  .stat b { display: block; font-size: 1.35rem; margin-top: 2px; color: var(--primary); }
+  .rbars { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
+  .rb { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .rb-val { font-size: .72rem; font-weight: 700; color: var(--muted); white-space: nowrap; }
+  .rb-track { width: 100%; max-width: 40px; height: 120px; background: var(--line); border-radius: 8px 8px 0 0; display: flex; align-items: flex-end; overflow: hidden; }
+  .rb-fill { width: 100%; background: var(--primary); }
+  .rb-fill.full { background: var(--ok); }
+  .rb-day { font-size: .72rem; color: var(--muted); text-align: center; line-height: 1.2; }
+  .rb-day b { display: block; color: var(--text); font-size: .85rem; }
+  .rb.today .rb-day b { color: var(--primary); }
+  .li { padding: 8px 0; border-top: 1px solid var(--line); font-size: .92rem; word-break: break-word; }
+  .li:first-of-type { border-top: 0; }
+  .li small { color: var(--muted); display: block; }
+  button.li-btn { display: block; width: 100%; text-align: left; background: none; color: var(--text); border-radius: 0; }
+
+  .data-btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .data-btns button { flex: 1 1 150px; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 20px; transform: translate(-50%, 30px); max-width: min(92vw, 460px);
+    background: #111827; color: #fff; padding: 12px 16px; border-radius: 12px; font-size: .92rem;
+    opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s; z-index: 80;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+  .toast-btn { background: rgba(255,255,255,.18); color: #fff; font-weight: 700; padding: 6px 12px; min-height: 36px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>✅ Mis Tareas y Apuntes</h1>
+  <p>Guarda lo que ves en YouTube y llévalo a la práctica cada día.</p>
+</header>
+
+<div class="tabs-wrap">
+  <nav class="tabs" role="tablist" aria-label="Secciones">
+    <button class="tab-btn" role="tab" data-tab="hoy"     type="button"><span>🏠</span>Hoy</button>
+    <button class="tab-btn" role="tab" data-tab="retos"   type="button"><span>🎯</span>Retos</button>
+    <button class="tab-btn" role="tab" data-tab="apuntes" type="button"><span>📚</span>Apuntes</button>
+    <button class="tab-btn" role="tab" data-tab="repaso"  type="button"><span>📊</span>Repaso</button>
+    <button class="tab-btn" role="tab" data-tab="ajustes" type="button"><span>⚙️</span>Ajustes</button>
+  </nav>
+</div>
+
+<div class="datebar" id="datebar">
+  <button class="icon-btn" id="d-prev" type="button" aria-label="Día anterior">‹</button>
+  <h2 id="d-label">Hoy</h2>
+  <button class="icon-btn" id="d-next" type="button" aria-label="Día siguiente">›</button>
+  <button class="today-btn" id="d-today" type="button" hidden>Hoy</button>
+</div>
+
+<main>
+  <!-- HOY -->
+  <section class="tab" id="tab-hoy" role="tabpanel">
+    <div class="col">
+      <!-- Recordatorio activo de videos de práctica -->
+      <div class="anchor-card" id="anchor-card" hidden>
+        <div class="anchor-head">
+          <b>💡 Para practicar de tus videos</b>
+          <button class="btn-sec btn-sm" id="anchor-open" type="button">Ver video</button>
+        </div>
+        <div class="anchor-title" id="anchor-title"></div>
+        <div class="anchor-steps" id="anchor-steps"></div>
+      </div>
+
+      <div class="card">
+        <div class="pr-top">
+          <div class="pr-big" id="pr-big">0%</div>
+          <div class="streak" id="pr-streak"></div>
+        </div>
+        <div class="meter"><i id="pr-bar"></i></div>
+        <p class="hint" id="pr-sub"></p>
+        <p class="banner" id="pr-banner" hidden></p>
+      </div>
+
+      <div class="card">
+        <h2>Tareas del día</h2>
+        <form id="t-form" autocomplete="off" novalidate>
+          <div class="add-row">
+            <input id="t-input" type="text" maxlength="200" placeholder="Ej: Mirar a los ojos al saludar" aria-label="Nueva tarea">
+            <button class="btn-main" type="submit">Agregar</button>
+          </div>
+        </form>
+        <div class="list" id="t-list"></div>
+      </div>
+
+      <div class="card" id="carry-card" hidden>
+        <h2>⏳ Pendientes de días anteriores</h2>
+        <div id="carry-list"></div>
+        <button class="btn-sec" id="carry-all" type="button" style="margin-top:10px;width:100%">Pasar todas a hoy</button>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="card">
+        <h2>🎯 Retos diarios (Práctica continua)</h2>
+        <div class="list" id="h-today" style="margin-top:0"></div>
+        <div id="h-empty" hidden>
+          <p class="empty" id="h-empty-txt" style="padding-top:0">Aún no tienes retos. Elige uno para empezar:</p>
+          <div class="chips" id="h-chips-today"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>📝 ¿Cómo me fue hoy?</h2>
+        <textarea id="refl" maxlength="1000" placeholder="¿Qué truco o paso puse en práctica hoy? ¿Cómo reaccionaron las personas?"></textarea>
+        <p class="hint" id="refl-saved">Se guarda automáticamente mientras escribes.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- RETOS (Organizado por categorías y filtrado de pasos de videos) -->
+  <section class="tab" id="tab-retos" role="tabpanel" hidden>
+    <div class="col">
+      <div class="card">
+        <h2>🎯 Pasos de tus videos para practicar</h2>
+        <p class="hint" style="margin-top:0">Filtra por tipo de video para ver solo los pasos que quieres practicar en tu día a día (y ocultar los de aprendizaje teórico como Excel o código).</p>
+        
+        <div class="chips" id="r-cat-filter" style="margin-top:10px"></div>
+
+        <label style="margin-top:10px">Filtrar por video específico
+          <select id="r-video-filter">
+            <option value="">Todos los videos de esta categoría</option>
+          </select>
+        </label>
+
+        <div class="list" id="r-video-steps-list"></div>
+      </div>
+
+      <div class="card">
+        <h2>Mis retos diarios activos</h2>
+        <div class="chips" id="r-habit-cat-filter" style="margin-bottom:10px"></div>
+        <div class="list" id="h-list" style="margin-top:0"></div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="card">
+        <h2>Crear reto diario manual</h2>
+        <form id="h-form" autocomplete="off" novalidate>
+          <label>¿Qué quieres practicar cada día?
+            <input id="h-name" type="text" maxlength="60" placeholder="Ej: Mirar a los ojos al conversar" required>
+          </label>
+          <div class="row">
+            <label>Categoría
+              <select id="h-cat">
+                <option value="comunicacion">🗣️ Comunicación / Psicología</option>
+                <option value="productividad">⚡ Productividad / Hábitos</option>
+                <option value="programacion">💻 Programación / VibeCoding</option>
+                <option value="aprendizaje">📊 Aprendizaje / Teoría</option>
+              </select>
+            </label>
+            <label>Cuántas veces al día
+              <input id="h-target" type="number" inputmode="numeric" min="1" max="100" value="3">
+            </label>
+          </div>
+          <label>Se cuenta en (opcional)
+            <input id="h-unit" type="text" maxlength="20" placeholder="personas / veces">
+          </label>
+          <div>
+            <div class="hint" style="margin:0 0 6px;font-weight:600">Días en que aplica</div>
+            <div class="days" id="h-days"></div>
+          </div>
+          <p class="error" id="h-error" role="alert"></p>
+          <button class="btn-main" type="submit">Crear reto</button>
+        </form>
+        <h3>Ideas rápidas de comunicación</h3>
+        <div class="chips" id="h-chips"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- APUNTES -->
+  <section class="tab" id="tab-apuntes" role="tabpanel" hidden style="grid-template-columns:minmax(0,1fr)">
+    <div id="notes-list-view">
+      <div class="card">
+        <div class="n-head">
+          <h2>📚 Videos y Pasos a Practicar</h2>
+          <button class="btn-main" id="n-new" type="button">＋ Nuevo video</button>
+        </div>
+        <input id="n-search" type="search" placeholder="Buscar video, truco o paso..." aria-label="Buscar apuntes">
+        <div class="chips" id="n-cat-filter" style="margin-top:10px"></div>
+        <div class="chips" id="n-tags" style="margin-top:6px"></div>
+        <div class="list" id="n-list"></div>
+      </div>
+    </div>
+
+    <div id="notes-edit-view" hidden>
+      <div class="card">
+        <div class="e-top">
+          <button class="btn-sec" id="e-back" type="button">← Volver</button>
+          <span class="grow" id="e-saved"></span>
+          <button class="btn-danger" id="e-del" type="button">Eliminar</button>
+        </div>
+        <form onsubmit="return false" autocomplete="off">
+          <label>Título del video
+            <input id="e-title" type="text" maxlength="120" placeholder="Ej: 7 trucos psicológicos para conversar">
+          </label>
+          <label>Tipo de video (para filtrar en Retos)
+            <select id="e-cat">
+              <option value="comunicacion">🗣️ Comunicación / Psicología (Práctica diaria)</option>
+              <option value="productividad">⚡ Productividad / Hábitos (Práctica diaria)</option>
+              <option value="aprendizaje">📊 Aprendizaje / Teoría (Ej: Excel, cursos)</option>
+              <option value="programacion">💻 Programación / VibeCoding / GitHub</option>
+            </select>
+          </label>
+          <label>Link de YouTube
+            <input id="e-url" type="url" inputmode="url" maxlength="500" placeholder="https://www.youtube.com/watch?v=...">
+          </label>
+          <a class="open-link" id="e-open" href="#" target="_blank" rel="noopener noreferrer" hidden>▶ Abrir video en YouTube</a>
+          <p class="error" id="e-url-err" role="alert"></p>
+          <div class="row">
+            <label>Canal o tema (opcional)
+              <input id="e-channel" type="text" maxlength="60" placeholder="Ej: Psicología / Excel">
+            </label>
+            <label>Fecha
+              <input id="e-date" type="date">
+            </label>
+          </div>
+          <label>Etiquetas (separadas por coma)
+            <input id="e-tags" type="text" maxlength="120" placeholder="conversar, mirar a los ojos, excel">
+          </label>
+          <label>Descripción / Resumen del video
+            <textarea id="e-text" maxlength="5000" rows="4" placeholder="De qué trata el video, ideas clave o contexto..."></textarea>
+          </label>
+        </form>
+
+        <h3>✅ Pasos del video</h3>
+        <p class="hint" style="margin-top:0">Anota cada paso o truco. Si el video es de <b>Comunicación</b> o <b>Productividad</b>, sus pasos aparecerán automáticamente en la pestaña <b>Retos</b> para que los practiques.</p>
+        <div id="e-steps"></div>
+        <label style="margin-top:10px">Agregar pasos (escribe uno por línea)
+          <textarea id="e-step-new" rows="3" maxlength="2000" placeholder="Ej:&#10;Mirar a los ojos al hablar&#10;Escuchar sin interrumpir&#10;Hacer preguntas abiertas"></textarea>
+        </label>
+        <div style="display:grid; gap:8px; margin-top:8px;">
+          <button class="btn-sec" id="e-step-add" type="button">＋ Guardar pasos en este video</button>
+          <div class="row">
+            <button class="btn-main btn-sm" id="e-steps-all" type="button">➜ Todos a Tareas de hoy</button>
+            <button class="btn-warn btn-sm" id="e-steps-habits" type="button">🎯 Todos a Retos diarios</button>
+          </div>
+        </div>
+
+        <details style="margin-top:18px; border-top:1px solid var(--line); padding-top:12px;">
+          <summary style="font-weight:700; cursor:pointer; color:var(--muted); font-size:.92rem;">💻 Comandos o notas técnicas (opcional)</summary>
+          <div style="margin-top:10px">
+            <div id="e-snips"></div>
+            <form id="sn-form" autocomplete="off" novalidate style="margin-top:8px">
+              <label>Descripción breve
+                <input id="e-sn-label" type="text" maxlength="60" placeholder="Ej: Subir cambios a GitHub">
+              </label>
+              <label>Comando o texto
+                <textarea class="mono" id="e-sn-code" rows="2" maxlength="3000" placeholder="git add ." spellcheck="false" autocapitalize="off" autocorrect="off"></textarea>
+              </label>
+              <div class="row">
+                <button class="btn-sec" id="e-sn-add" type="submit">＋ Agregar</button>
+                <button class="btn-sec" id="e-git" type="button">Plantilla Git</button>
+              </div>
+            </form>
+          </div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- REPASO -->
+  <section class="tab" id="tab-repaso" role="tabpanel" hidden>
+    <div class="col">
+      <div class="card">
+        <h2>Tu semana (últimos 7 días)</h2>
+        <div class="stats" id="rp-stats"></div>
+      </div>
+      <div class="card">
+        <h2>Cumplimiento por día</h2>
+        <div class="rbars" id="rp-bars"></div>
+        <p class="hint">Cada barra muestra el porcentaje de tareas y retos cumplidos ese día.</p>
+      </div>
+    </div>
+    <div class="col">
+      <div class="card">
+        <h2>📚 Videos vistos esta semana</h2>
+        <div id="rp-notes"></div>
+      </div>
+      <div class="card">
+        <h2>📝 Cómo me fue</h2>
+        <div id="rp-refl"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- AJUSTES -->
+  <section class="tab" id="tab-ajustes" role="tabpanel" hidden>
+    <div class="col">
+      <div class="card">
+        <h2>Guardado y respaldo en tu teléfono</h2>
+        <p class="hint" style="margin:0">Cada vez que entras desde tu link en este teléfono, todo lo que registras se guarda automáticamente en el dispositivo. Usa estos botones si quieres guardar una copia de seguridad o pasar tus datos a otro celular.</p>
+        <div class="data-btns">
+          <button class="btn-sec" id="btn-export" type="button">⬇ Descargar copia</button>
+          <button class="btn-sec" id="btn-import" type="button">⬆ Restaurar copia</button>
+          <input id="file-import" type="file" accept="application/json,.json" hidden>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  var KEY = 'tareas-v1', TKEY = 'tareas-tab-v1';
+  var MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  var DIAS = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+  var DIAS_CORTOS = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  var WEEK_ORDER = [1, 2, 3, 4, 5, 6, 0];
+  var WEEK_LETTERS = { 1: 'L', 2: 'M', 3: 'X', 4: 'J', 5: 'V', 6: 'S', 0: 'D' };
+
+  var CATEGORIES = {
+    comunicacion: { id: 'comunicacion', label: '🗣️ Comunicación', full: '🗣️ Comunicación / Psicología', practice: true },
+    productividad: { id: 'productividad', label: '⚡ Productividad', full: '⚡ Productividad / Hábitos', practice: true },
+    aprendizaje: { id: 'aprendizaje', label: '📊 Aprendizaje', full: '📊 Aprendizaje / Teoría', practice: false },
+    programacion: { id: 'programacion', label: '💻 Programación', full: '💻 Programación / VibeCoding', practice: false }
+  };
+
+  var TEMPLATES = [
+    { name: 'Mirar a los ojos al conversar', target: 3, unit: 'personas', cat: 'comunicacion' },
+    { name: 'Saludar con una sonrisa', target: 3, unit: 'personas', cat: 'comunicacion' },
+    { name: 'Escuchar sin interrumpir', target: 2, unit: 'conversaciones', cat: 'comunicacion' },
+    { name: 'Iniciar una conversación', target: 1, unit: 'conversación', cat: 'comunicacion' },
+    { name: 'Decir el nombre de la persona', target: 3, unit: 'veces', cat: 'comunicacion' },
+    { name: 'Dar un cumplido sincero', target: 1, unit: 'cumplido', cat: 'comunicacion' }
+  ];
+  var GIT_TEMPLATE = [
+    ['Ver archivos modificados', 'git status'],
+    ['Preparar cambios', 'git add .'],
+    ['Guardar versión (commit)', 'git commit -m "Actualización"'],
+    ['Subir a GitHub (push)', 'git push']
+  ];
+
+  function $(id) { return document.getElementById(id); }
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+  function fmtDate(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+  function parseDate(s) { var p = s.split('-').map(Number); return new Date(p[0], p[1] - 1, p[2]); }
+  function todayStr() { return fmtDate(new Date()); }
+  function addDays(s, n) { var d = parseDate(s); d.setDate(d.getDate() + n); return fmtDate(d); }
+  function validDate(s) { return typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s) && fmtDate(parseDate(s)) === s; }
+  function longDate(s) { var d = parseDate(s); return DIAS[d.getDay()] + ' ' + d.getDate() + ' de ' + MESES[d.getMonth()]; }
+  function shortDate(s) { var d = parseDate(s); return pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d.getFullYear(); }
+  function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text !== undefined) e.textContent = text;
+    return e;
+  }
+  function clear(node) { while (node.firstChild) node.removeChild(node.firstChild); }
+  function str(v, max) { return typeof v === 'string' ? v.trim().slice(0, max) : ''; }
+  function validUrl(u) { return /^https?:\/\/[^\s]+$/i.test(u); }
+  function validCat(c) { return CATEGORIES[c] ? c : 'comunicacion'; }
+
+  var state = { tasks: [], habits: [], hlog: {}, notes: [], refl: {} };
+
+  function cleanTask(o) {
+    if (!o || typeof o.id !== 'string' || !o.id || !validDate(o.date)) return null;
+    var t = str(o.text, 200); if (!t) return null;
+    return { id: o.id, text: t, date: o.date, done: !!o.done, note: typeof o.note === 'string' ? o.note : '' };
+  }
+  function cleanHabit(o) {
+    if (!o || typeof o.id !== 'string' || !o.id) return null;
+    var n = str(o.name, 60); if (!n) return null;
+    var tg = Math.round(+o.target); if (!isFinite(tg) || tg < 1) tg = 1; if (tg > 100) tg = 100;
+    var days = Array.isArray(o.days) ? o.days.filter(function (d, i, a) { return d >= 0 && d <= 6 && d === Math.floor(d) && a.indexOf(d) === i; }) : [];
+    if (!days.length) days = [0, 1, 2, 3, 4, 5, 6];
+    return {
+      id: o.id, name: n, target: tg, unit: str(o.unit, 20),
+      cat: validCat(o.cat),
+      days: days, start: validDate(o.start) ? o.start : todayStr()
+    };
+  }
+  function cleanHlog(h) {
+    var out = {};
+    if (!h || typeof h !== 'object') return out;
+    Object.keys(h).forEach(function (d) {
+      if (!validDate(d) || !h[d] || typeof h[d] !== 'object') return;
+      Object.keys(h[d]).forEach(function (hid) {
+        var e = h[d][hid]; if (!e || typeof e !== 'object') return;
+        var n = Math.round(+e.n); if (!isFinite(n) || n < 0) n = 0; if (n > 999) n = 999;
+        var note = str(e.note, 300);
+        if (n === 0 && !note) return;
+        (out[d] = out[d] || {})[hid] = { n: n, note: note };
+      });
+    });
+    return out;
+  }
+  function cleanTags(arr) {
+    var out = [], seen = {};
+    (Array.isArray(arr) ? arr : []).forEach(function (t) {
+      var v = str(t, 20), k = v.toLowerCase();
+      if (v && !seen[k] && out.length < 6) { seen[k] = 1; out.push(v); }
+    });
+    return out;
+  }
+  function cleanNote(o) {
+    if (!o || typeof o.id !== 'string' || !o.id) return null;
+    var steps = [], snips = [];
+    (Array.isArray(o.steps) ? o.steps : []).forEach(function (s) {
+      if (!s || steps.length >= 60) return;
+      var t = str(s.text, 200); if (!t) return;
+      steps.push({ id: typeof s.id === 'string' && s.id ? s.id : uid(), text: t, done: !!s.done });
+    });
+    (Array.isArray(o.snips) ? o.snips : []).forEach(function (s) {
+      if (!s || snips.length >= 30 || typeof s.code !== 'string') return;
+      var c = s.code.slice(0, 3000); if (!c.trim()) return;
+      snips.push({ id: typeof s.id === 'string' && s.id ? s.id : uid(), label: str(s.label, 60), code: c });
+    });
+    var url = str(o.url, 500);
+    return {
+      id: o.id, title: str(o.title, 120), url: validUrl(url) ? url : '', channel: str(o.channel, 60),
+      cat: validCat(o.cat),
+      date: validDate(o.date) ? o.date : todayStr(), tags: cleanTags(o.tags),
+      text: typeof o.text === 'string' ? o.text.slice(0, 5000) : '', steps: steps, snips: snips,
+      created: isFinite(+o.created) ? +o.created : Date.now()
+    };
+  }
+  function cleanRefl(r) {
+    var out = {};
+    if (!r || typeof r !== 'object') return out;
+    Object.keys(r).forEach(function (d) { var t = str(r[d], 1000); if (validDate(d) && t) out[d] = t; });
+    return out;
+  }
+  function cleanAll(p) {
+    return {
+      tasks: (Array.isArray(p.tasks) ? p.tasks : []).map(cleanTask).filter(Boolean).slice(0, 5000),
+      habits: (Array.isArray(p.habits) ? p.habits : []).map(cleanHabit).filter(Boolean).slice(0, 40),
+      hlog: cleanHlog(p.hlog),
+      notes: (Array.isArray(p.notes) ? p.notes : []).map(cleanNote).filter(Boolean).slice(0, 500),
+      refl: cleanRefl(p.refl)
+    };
+  }
+  try {
+    var raw = localStorage.getItem(KEY);
+    if (raw) { var parsed = JSON.parse(raw); if (parsed && typeof parsed === 'object') state = cleanAll(parsed); }
+  } catch (e) { state = { tasks: [], habits: [], hlog: {}, notes: [], refl: {} }; }
+
+  var saveTimer = null;
+  function save() {
+    clearTimeout(saveTimer); saveTimer = null;
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
+  }
+  function saveSoon() { clearTimeout(saveTimer); saveTimer = setTimeout(save, 250); }
+  function flush() { if (saveTimer) save(); }
+  window.addEventListener('pagehide', flush);
+  document.addEventListener('visibilitychange', function () { if (document.hidden) flush(); });
+
+  var elToast = $('toast'), toastTimer = null;
+  function toast(msg, undo) {
+    clear(elToast);
+    elToast.appendChild(el('span', '', msg));
+    if (undo) {
+      var b = el('button', 'toast-btn', 'Deshacer'); b.type = 'button';
+      b.addEventListener('click', function () { undo(); elToast.classList.remove('show'); });
+      elToast.appendChild(b);
+    }
+    elToast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { elToast.classList.remove('show'); }, 5000);
+  }
+  function copyText(txt) {
+    function fallback() {
+      try {
+        var ta = document.createElement('textarea');
+        ta.value = txt; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select(); var ok = document.execCommand('copy'); ta.remove();
+        toast(ok ? 'Copiado ✔' : 'No se pudo copiar.');
+      } catch (e) { toast('No se pudo copiar.'); }
+    }
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(function () { toast('Copiado ✔'); }, fallback);
+      else fallback();
+    } catch (e) { fallback(); }
+  }
+
+  var today = todayStr();
+  var selDate = today;
+  var tab = 'hoy';
+  var TABS = ['hoy', 'retos', 'apuntes', 'repaso', 'ajustes'];
+  try { var st = localStorage.getItem(TKEY); if (TABS.indexOf(st) !== -1) tab = st; } catch (e) {}
+
+  function noteById(id) { for (var i = 0; i < state.notes.length; i++) if (state.notes[i].id === id) return state.notes[i]; return null; }
+  function habitActive(h, ds) { return h.days.indexOf(parseDate(ds).getDay()) !== -1 && ds >= h.start; }
+  function habitsOf(ds) { return state.habits.filter(function (h) { return habitActive(h, ds); }); }
+  function hcount(ds, hid) { var d = state.hlog[ds]; return d && d[hid] ? d[hid].n : 0; }
+  function tasksOf(ds) { return state.tasks.filter(function (t) { return t.date === ds; }); }
+  function dayStats(ds) {
+    var ts = tasksOf(ds), hs = habitsOf(ds), r = { tasks: ts.length, tasksDone: 0, habits: hs.length, habitsDone: 0 };
+    ts.forEach(function (t) { if (t.done) r.tasksDone++; });
+    hs.forEach(function (h) { if (hcount(ds, h.id) >= h.target) r.habitsDone++; });
+    r.total = r.tasks + r.habits; r.done = r.tasksDone + r.habitsDone;
+    return r;
+  }
+  function dayOk(ds) { var s = dayStats(ds); return s.total > 0 && s.done === s.total; }
+  function streak() {
+    var d = today, n = 0;
+    if (!dayOk(d)) d = addDays(d, -1);
+    while (n < 800 && dayOk(d)) { n++; d = addDays(d, -1); }
+    return n;
+  }
+  function setHabitCount(hid, ds, n, note) {
+    n = Math.max(0, Math.min(999, n));
+    var day = state.hlog[ds] = state.hlog[ds] || {};
+    var cur = day[hid] || { n: 0, note: '' };
+    cur.n = n; if (note !== undefined) cur.note = note.slice(0, 300);
+    if (cur.n === 0 && !cur.note) delete day[hid]; else day[hid] = cur;
+    if (!Object.keys(day).length) delete state.hlog[ds];
+  }
+
+  /* ---------- Convertir paso de video en Reto Diario ---------- */
+  function addHabitFromStep(stepText, cat, silent) {
+    var cleanName = stepText.trim().slice(0, 60);
+    if (!cleanName) return false;
+    var exists = state.habits.some(function (h) { return h.name.toLowerCase() === cleanName.toLowerCase(); });
+    if (exists) {
+      if (!silent) toast('Ese paso ya está en tus retos diarios.');
+      return false;
+    }
+    if (state.habits.length >= 40) {
+      if (!silent) toast('Máximo 40 retos activos.');
+      return false;
+    }
+    state.habits.push({
+      id: uid(),
+      name: cleanName,
+      target: 1,
+      unit: 'vez',
+      cat: validCat(cat),
+      days: [0, 1, 2, 3, 4, 5, 6],
+      start: today
+    });
+    return true;
+  }
+
+  function catBadge(catId) {
+    var c = CATEGORIES[validCat(catId)];
+    return el('span', 'cat-badge cat-' + c.id, c.label);
+  }
+
+  /* ---------- Render: Ancla de práctica en Hoy (solo videos de práctica) ---------- */
+  function renderAnchor() {
+    var card = $('anchor-card'), stepsBox = $('anchor-steps');
+    clear(stepsBox);
+    if (selDate !== today) { card.hidden = true; return; }
+    var activeNotes = state.notes.filter(function (n) {
+      var cat = CATEGORIES[validCat(n.cat)];
+      return cat.practice && n.steps && n.steps.some(function (s) { return !s.done; });
+    }).sort(function (a, b) { return b.created - a.created; });
+
+    if (!activeNotes.length) { card.hidden = true; return; }
+    var note = activeNotes[0];
+    card.hidden = false;
+    $('anchor-title').textContent = '🎬 ' + (note.title || 'Video guardado');
+    $('anchor-open').onclick = function () { showTab('apuntes'); openNote(note.id); };
+
+    var pending = note.steps.filter(function (s) { return !s.done; }).slice(0, 3);
+    pending.forEach(function (s) {
+      var row = el('div', 'anchor-step');
+      var chk = el('button', 'chk', ''); chk.type = 'button';
+      chk.setAttribute('aria-label', 'Marcar paso practicado: ' + s.text);
+      chk.addEventListener('click', function () {
+        s.done = true; save(); render();
+        toast('¡Paso puesto en práctica! ✔');
+      });
+      var txt = el('span', '', s.text);
+      var btnReto = el('button', 'btn-sec btn-sm', '+ Reto'); btnReto.type = 'button';
+      btnReto.addEventListener('click', function () {
+        if (addHabitFromStep(s.text, note.cat)) { save(); render(); toast('Agregado a tus retos diarios 🎯'); }
+      });
+      row.appendChild(chk); row.appendChild(txt); row.appendChild(btnReto);
+      stepsBox.appendChild(row);
+    });
+  }
+
+  /* ---------- Render: Hoy ---------- */
+  function renderDatebar() {
+    var h = $('d-label'); h.textContent = longDate(selDate);
+    var tag = selDate === today ? 'Hoy' : selDate === addDays(today, -1) ? 'Ayer' : selDate === addDays(today, 1) ? 'Mañana' : '';
+    if (tag) h.appendChild(el('span', 'tag', tag));
+    $('d-today').hidden = selDate === today;
+  }
+
+  function renderProgress() {
+    var s = dayStats(selDate);
+    var pct = s.total ? Math.round(s.done / s.total * 100) : 0;
+    $('pr-big').textContent = pct + '%';
+    var bar = $('pr-bar'); bar.style.width = pct + '%'; bar.className = (s.total && s.done === s.total) ? 'ok' : '';
+    var k = streak();
+    $('pr-streak').textContent = k > 0 ? '🔥 ' + k + (k === 1 ? ' día' : ' días') + ' de racha' : '';
+    $('pr-sub').textContent = s.total
+      ? s.done + ' de ' + s.total + ' completadas (' + s.tasksDone + '/' + s.tasks + ' tareas · ' + s.habitsDone + '/' + s.habits + ' retos)'
+      : 'Agrega tareas o pasos de tus videos para empezar el día.';
+    var ban = $('pr-banner');
+    if (s.total && s.done === s.total) { ban.hidden = false; ban.textContent = '¡Día completo! 🎉 Practicaste todo lo que te propusiste.'; }
+    else ban.hidden = true;
+  }
+
+  function renderTasks() {
+    var box = $('t-list'); clear(box);
+    var list = tasksOf(selDate);
+    if (!list.length) { box.appendChild(el('div', 'empty', 'No hay tareas para este día. Agrega una arriba o pasa pasos desde tus videos.')); return; }
+    list.sort(function (a, b) { return (a.done - b.done); });
+    list.forEach(function (t) {
+      var row = el('div', 'task' + (t.done ? ' done' : ''));
+      var chk = el('button', 'chk', t.done ? '✓' : ''); chk.type = 'button';
+      chk.setAttribute('role', 'checkbox'); chk.setAttribute('aria-checked', t.done ? 'true' : 'false');
+      chk.setAttribute('aria-label', 'Completada: ' + t.text);
+      function toggle() { t.done = !t.done; save(); render(); }
+      chk.addEventListener('click', toggle);
+      var main = el('div', 't-main'); main.appendChild(el('div', 't-text', t.text));
+      main.addEventListener('click', toggle);
+      var n = t.note ? noteById(t.note) : null;
+      if (n) {
+        var meta = el('div', 't-meta');
+        var chip = el('button', 'chip', '🎬 ' + (n.title || 'Ver video')); chip.type = 'button';
+        chip.addEventListener('click', function (e) { e.stopPropagation(); showTab('apuntes'); openNote(n.id); });
+        meta.appendChild(chip); main.appendChild(meta);
+      }
+      var ed = el('button', 'del', '✎'); ed.type = 'button'; ed.setAttribute('aria-label', 'Editar ' + t.text);
+      ed.addEventListener('click', function () {
+        var v = prompt('Editar tarea', t.text);
+        if (v === null) return; v = v.trim().slice(0, 200);
+        if (!v) { toast('La tarea no puede quedar vacía.'); return; }
+        t.text = v; save(); render();
+      });
+      var del = el('button', 'del', '✕'); del.type = 'button'; del.setAttribute('aria-label', 'Eliminar ' + t.text);
+      del.addEventListener('click', function () {
+        state.tasks = state.tasks.filter(function (x) { return x.id !== t.id; }); save(); render();
+        toast('Tarea eliminada', function () { state.tasks.push(t); save(); render(); });
+      });
+      row.appendChild(chk); row.appendChild(main); row.appendChild(ed); row.appendChild(del);
+      box.appendChild(row);
+    });
+  }
+
+  function renderCarry() {
+    var card = $('carry-card'), box = $('carry-list'); clear(box);
+    var list = state.tasks.filter(function (t) { return !t.done && t.date < today; }).sort(function (a, b) { return a.date < b.date ? 1 : -1; });
+    if (selDate !== today || !list.length) { card.hidden = true; return; }
+    card.hidden = false;
+    list.slice(0, 10).forEach(function (t) {
+      var row = el('div', 'carry');
+      var tx = el('div', 'c-text', t.text); tx.appendChild(el('small', '', 'Era del ' + longDate(t.date)));
+      var mv = el('button', 'btn-sec btn-sm', 'Pasar a hoy'); mv.type = 'button';
+      mv.addEventListener('click', function () { t.date = today; save(); render(); });
+      var del = el('button', 'del', '✕'); del.type = 'button'; del.setAttribute('aria-label', 'Descartar ' + t.text);
+      del.addEventListener('click', function () {
+        state.tasks = state.tasks.filter(function (x) { return x.id !== t.id; }); save(); render();
+        toast('Tarea descartada', function () { state.tasks.push(t); save(); render(); });
+      });
+      row.appendChild(tx); row.appendChild(mv); row.appendChild(del); box.appendChild(row);
+    });
+    if (list.length > 10) box.appendChild(el('p', 'hint', 'y ' + (list.length - 10) + ' más...'));
+  }
+
+  function habitSub(h, n) { return n + ' de ' + h.target + (h.unit ? ' ' + h.unit : ''); }
+
+  function renderHabitsToday() {
+    var box = $('h-today'); clear(box);
+    var hs = habitsOf(selDate);
+    var left = availableTemplates().length;
+    $('h-empty').hidden = state.habits.length >= 3 || !left;
+    $('h-empty-txt').textContent = state.habits.length ? 'Sugerencias para practicar hoy:' : 'Aún no tienes retos diarios. Toca uno para empezar:';
+    if (!hs.length) {
+      if (state.habits.length) box.appendChild(el('div', 'empty', 'No tienes retos programados para este día.'));
+      return;
+    }
+    hs.forEach(function (h) {
+      var n = hcount(selDate, h.id), done = n >= h.target;
+      var wrap = el('div', 'habit' + (done ? ' done' : ''));
+      var top = el('div', 'h-top');
+      var info = el('div', '');
+      var titleRow = el('div', 'h-name', (done ? '✅ ' : '') + h.name + ' ');
+      titleRow.appendChild(catBadge(h.cat));
+      info.appendChild(titleRow);
+      info.appendChild(el('div', 'h-sub', habitSub(h, n) + (n > h.target ? ' · ¡superaste la meta!' : '')));
+      var cnt = el('div', 'counter');
+      var minus = el('button', 'minus', '−'); minus.type = 'button'; minus.disabled = n === 0; minus.setAttribute('aria-label', 'Restar uno a ' + h.name);
+      var num = el('div', 'num', String(n));
+      var plus = el('button', 'plus', '+'); plus.type = 'button'; plus.setAttribute('aria-label', 'Sumar uno a ' + h.name);
+      minus.addEventListener('click', function () { setHabitCount(h.id, selDate, n - 1); save(); render(); });
+      plus.addEventListener('click', function () {
+        setHabitCount(h.id, selDate, n + 1); save(); render();
+        if (n + 1 === h.target) toast('¡Reto cumplido! 🎉 ' + h.name);
+      });
+      cnt.appendChild(minus); cnt.appendChild(num); cnt.appendChild(plus);
+      top.appendChild(info); top.appendChild(cnt); wrap.appendChild(top);
+      var m = el('div', 'meter'), i = document.createElement('i');
+      i.style.width = Math.min(100, n / h.target * 100) + '%'; i.className = done ? 'ok' : ''; m.appendChild(i); wrap.appendChild(m);
+
+      var entry = state.hlog[selDate] && state.hlog[selDate][h.id];
+      var noteBox = el('div', 'h-note');
+      if (entry && entry.note) noteBox.appendChild(el('div', 'h-note-saved', '📝 ' + entry.note));
+      var nb = el('button', 'link', entry && entry.note ? 'Editar nota de práctica' : '📝 Anotar cómo me fue'); nb.type = 'button';
+      nb.style.textAlign = 'left'; nb.style.padding = '2px 0';
+      nb.addEventListener('click', function () {
+        var v = prompt('¿Cómo te fue practicando "' + h.name + '"?', entry && entry.note ? entry.note : '');
+        if (v === null) return;
+        setHabitCount(h.id, selDate, hcount(selDate, h.id), v.trim()); save(); render();
+      });
+      noteBox.appendChild(nb); wrap.appendChild(noteBox);
+      box.appendChild(wrap);
+    });
+  }
+
+  function addHabitFromTemplate(tpl) {
+    if (state.habits.some(function (h) { return h.name.toLowerCase() === tpl.name.toLowerCase(); })) { toast('Ya tienes ese reto.'); return; }
+    if (state.habits.length >= 40) { toast('Máximo 40 retos.'); return; }
+    state.habits.push({ id: uid(), name: tpl.name, target: tpl.target, unit: tpl.unit, cat: tpl.cat || 'comunicacion', days: [0, 1, 2, 3, 4, 5, 6], start: today });
+    save(); render(); toast('Reto agregado: ' + tpl.name + ' ✔');
+  }
+  function availableTemplates() {
+    return TEMPLATES.filter(function (tpl) {
+      return !state.habits.some(function (h) { return h.name.toLowerCase() === tpl.name.toLowerCase(); });
+    });
+  }
+  function renderChips(box) {
+    clear(box);
+    availableTemplates().forEach(function (tpl) {
+      var c = el('button', 'chip', '＋ ' + tpl.name); c.type = 'button';
+      c.addEventListener('click', function () { addHabitFromTemplate(tpl); });
+      box.appendChild(c);
+    });
+  }
+
+  function renderReflection() {
+    var ta = $('refl');
+    if (document.activeElement !== ta) ta.value = state.refl[selDate] || '';
+  }
+
+  /* ---------- Render: Retos y Filtro de Pasos de Videos ---------- */
+  var newDays = [0, 1, 2, 3, 4, 5, 6];
+  var retosCatFilter = 'practica'; // Por defecto muestra solo videos de práctica (Comunicación y Productividad)
+  var retosVideoIdFilter = '';
+  var habitListCatFilter = 'all';
+
+  function renderDayButtons(box, days, onToggle) {
+    clear(box);
+    WEEK_ORDER.forEach(function (d) {
+      var b = el('button', 'day-btn', WEEK_LETTERS[d]); b.type = 'button';
+      b.setAttribute('aria-pressed', days.indexOf(d) !== -1 ? 'true' : 'false');
+      b.setAttribute('aria-label', DIAS[d]);
+      b.addEventListener('click', function () { onToggle(d); });
+      box.appendChild(b);
+    });
+  }
+
+  function renderRetosVideoSteps() {
+    var filterBox = $('r-cat-filter');
+    clear(filterBox);
+
+    var filterOptions = [
+      { id: 'practica', label: '🎯 Solo Práctica (Comunicación / Hábitos)' },
+      { id: 'comunicacion', label: '🗣️ Comunicación' },
+      { id: 'productividad', label: '⚡ Productividad' },
+      { id: 'aprendizaje', label: '📊 Aprendizaje / Teoría' },
+      { id: 'programacion', label: '💻 Programación' }
+    ];
+
+    filterOptions.forEach(function (opt) {
+      var btn = el('button', 'chip' + (retosCatFilter === opt.id ? ' sel' : ''), opt.label);
+      btn.type = 'button';
+      btn.addEventListener('click', function () {
+        retosCatFilter = opt.id;
+        retosVideoIdFilter = '';
+        renderRetosVideoSteps();
+      });
+      filterBox.appendChild(btn);
+    });
+
+    // Filtrar videos con pasos según la categoría seleccionada
+    var filteredVideos = state.notes.filter(function (n) {
+      if (!n.steps || !n.steps.length) return false;
+      var c = validCat(n.cat);
+      if (retosCatFilter === 'practica') return CATEGORIES[c].practice;
+      return c === retosCatFilter;
+    }).sort(function (a, b) { return b.created - a.created; });
+
+    // Actualizar selector desplegable de video específico
+    var vidSelect = $('r-video-filter');
+    clear(vidSelect);
+    var defaultOpt = document.createElement('option');
+    defaultOpt.value = '';
+    defaultOpt.textContent = filteredVideos.length
+      ? 'Todos los videos (' + filteredVideos.length + ')'
+      : 'No hay videos con pasos en esta categoría';
+    vidSelect.appendChild(defaultOpt);
+
+    filteredVideos.forEach(function (v) {
+      var o = document.createElement('option');
+      o.value = v.id;
+      o.textContent = (v.title || 'Video sin título') + ' (' + v.steps.length + ' pasos)';
+      if (v.id === retosVideoIdFilter) o.selected = true;
+      vidSelect.appendChild(o);
+    });
+
+    if (retosVideoIdFilter && !filteredVideos.some(function (v) { return v.id === retosVideoIdFilter; })) {
+      retosVideoIdFilter = '';
+    }
+
+    var listBox = $('r-video-steps-list');
+    clear(listBox);
+
+    var displayVideos = retosVideoIdFilter
+      ? filteredVideos.filter(function (v) { return v.id === retosVideoIdFilter; })
+      : filteredVideos;
+
+    if (!displayVideos.length) {
+      var msg = retosCatFilter === 'practica'
+        ? 'No tienes videos de Comunicación o Productividad con pasos aún. Agrega uno en la pestaña Apuntes.'
+        : 'No hay videos con pasos en esta categoría.';
+      listBox.appendChild(el('div', 'empty', msg));
+      return;
+    }
+
+    displayVideos.forEach(function (v) {
+      var box = el('div', 'video-steps-box');
+      var head = el('div', 'vsb-head');
+      var leftHead = el('div', '');
+      leftHead.appendChild(el('div', 'vsb-title', '🎬 ' + (v.title || 'Video sin título')));
+      leftHead.appendChild(catBadge(v.cat));
+      head.appendChild(leftHead);
+
+      var btnAllReto = el('button', 'btn-warn btn-sm', '🎯 Todos a retos diarios');
+      btnAllReto.type = 'button';
+      btnAllReto.addEventListener('click', function () {
+        var added = 0;
+        v.steps.forEach(function (s) {
+          if (addHabitFromStep(s.text, v.cat, true)) added++;
+        });
+        if (!added) toast('Todos los pasos de este video ya están en tus retos.');
+        else { save(); render(); toast('Agregados ' + added + ' retos diarios 🎯'); }
+      });
+      head.appendChild(btnAllReto);
+      box.appendChild(head);
+
+      v.steps.forEach(function (s) {
+        var sRow = el('div', 'vsb-step' + (s.done ? ' done' : ''));
+        var chk = el('button', 'chk', s.done ? '✓' : '');
+        chk.type = 'button';
+        chk.setAttribute('aria-label', 'Marcar paso: ' + s.text);
+        chk.addEventListener('click', function () {
+          s.done = !s.done;
+          save();
+          render();
+        });
+
+        var stxt = el('span', '', s.text);
+        var alreadyHabit = state.habits.some(function (h) { return h.name.toLowerCase() === s.text.trim().slice(0, 60).toLowerCase(); });
+
+        var addBtn = el('button', alreadyHabit ? 'btn-sec btn-sm' : 'btn-main btn-sm', alreadyHabit ? '✔ En retos' : '+ Reto');
+        addBtn.type = 'button';
+        addBtn.disabled = alreadyHabit;
+        addBtn.addEventListener('click', function () {
+          if (addHabitFromStep(s.text, v.cat)) {
+            save();
+            render();
+            toast('Paso agregado a tus retos diarios 🎯');
+          }
+        });
+
+        sRow.appendChild(chk);
+        sRow.appendChild(stxt);
+        sRow.appendChild(addBtn);
+        box.appendChild(sRow);
+      });
+
+      listBox.appendChild(box);
+    });
+  }
+
+  function renderHabitsManage() {
+    renderRetosVideoSteps();
+
+    function toggleNewDay(d) {
+      var i = newDays.indexOf(d); if (i === -1) newDays.push(d); else if (newDays.length > 1) newDays.splice(i, 1);
+      renderDayButtons($('h-days'), newDays, toggleNewDay);
+    }
+    renderDayButtons($('h-days'), newDays, toggleNewDay);
+
+    // Filtro de categoría para Mis retos activos
+    var hCatBox = $('r-habit-cat-filter');
+    clear(hCatBox);
+    var hCats = [
+      { id: 'all', label: 'Todos (' + state.habits.length + ')' },
+      { id: 'comunicacion', label: '🗣️ Comunicación' },
+      { id: 'productividad', label: '⚡ Productividad' },
+      { id: 'aprendizaje', label: '📊 Aprendizaje' },
+      { id: 'programacion', label: '💻 Programación' }
+    ];
+    hCats.forEach(function (c) {
+      var b = el('button', 'chip' + (habitListCatFilter === c.id ? ' sel' : ''), c.label);
+      b.type = 'button';
+      b.addEventListener('click', function () {
+        habitListCatFilter = c.id;
+        renderHabitsManage();
+      });
+      hCatBox.appendChild(b);
+    });
+
+    var box = $('h-list'); clear(box);
+    var filteredHabits = state.habits.filter(function (h) {
+      if (habitListCatFilter === 'all') return true;
+      return validCat(h.cat) === habitListCatFilter;
+    });
+
+    if (!filteredHabits.length) {
+      box.appendChild(el('div', 'empty', state.habits.length ? 'No tienes retos en esta categoría.' : 'Todavía no tienes retos. Crea uno o agrega pasos desde arriba.'));
+      return;
+    }
+
+    filteredHabits.forEach(function (h) {
+      var wrap = el('div', 'habit'); var edit = el('div', 'h-edit');
+      var topBadgeRow = el('div', '');
+      topBadgeRow.appendChild(catBadge(h.cat));
+      edit.appendChild(topBadgeRow);
+
+      var nm = document.createElement('input'); nm.type = 'text'; nm.maxLength = 60; nm.value = h.name; nm.setAttribute('aria-label', 'Nombre del reto');
+      var row = el('div', 'row');
+      var tg = document.createElement('input'); tg.type = 'number'; tg.min = '1'; tg.max = '100'; tg.value = String(h.target); tg.setAttribute('aria-label', 'Veces al día');
+      var un = document.createElement('input'); un.type = 'text'; un.maxLength = 20; un.value = h.unit; un.placeholder = 'unidad'; un.setAttribute('aria-label', 'Unidad');
+      row.appendChild(tg); row.appendChild(un);
+      var days = el('div', 'days');
+      function paintDays() {
+        renderDayButtons(days, h.days, function (d) {
+          var i = h.days.indexOf(d); if (i === -1) h.days.push(d); else if (h.days.length > 1) h.days.splice(i, 1);
+          save(); render();
+        });
+      }
+      paintDays();
+      nm.addEventListener('change', function () { var v = nm.value.trim().slice(0, 60); if (!v) { nm.value = h.name; toast('Ponle un nombre al reto.'); return; } h.name = v; save(); render(); });
+      tg.addEventListener('change', function () { var n = Math.round(Number(tg.value)); if (!isFinite(n) || n < 1 || n > 100) { tg.value = String(h.target); toast('Entre 1 y 100 veces.'); return; } h.target = n; save(); render(); });
+      un.addEventListener('change', function () { h.unit = un.value.trim().slice(0, 20); save(); render(); });
+
+      var wk = 0, wkDays = 0, wkTotal = 0;
+      for (var i = 0; i < 7; i++) {
+        var ds = addDays(today, -i);
+        if (habitActive(h, ds)) { wkDays++; var c = hcount(ds, h.id); wkTotal += c; if (c >= h.target) wk++; }
+      }
+      var stat = el('div', 'h-sub', wkDays ? 'Últimos 7 días: cumpliste ' + wk + ' de ' + wkDays + ' días · ' + wkTotal + (h.unit ? ' ' + h.unit : ' en total') : 'Aún sin días para evaluar.');
+      var del = el('button', 'btn-danger', 'Eliminar reto'); del.type = 'button'; del.style.justifySelf = 'start';
+      del.addEventListener('click', function () {
+        if (!confirm('¿Eliminar "' + h.name + '"?')) return;
+        state.habits = state.habits.filter(function (x) { return x.id !== h.id; });
+        Object.keys(state.hlog).forEach(function (d) { delete state.hlog[d][h.id]; if (!Object.keys(state.hlog[d]).length) delete state.hlog[d]; });
+        save(); render();
+      });
+      edit.appendChild(nm); edit.appendChild(row); edit.appendChild(days); edit.appendChild(stat); edit.appendChild(del);
+      wrap.appendChild(edit); box.appendChild(wrap);
+    });
+  }
+
+  /* ---------- Apuntes con Categorías y Vista Rápida ---------- */
+  var editId = null, tagFilter = '', noteCatFilter = 'all';
+  function noteText(n) {
+    return [n.title, n.channel, n.tags.join(' '), n.text, n.steps.map(function (s) { return s.text; }).join(' '),
+            n.snips.map(function (s) { return s.label + ' ' + s.code; }).join(' ')].join(' ').toLowerCase();
+  }
+  function renderNotesList() {
+    var catFilterBox = $('n-cat-filter');
+    clear(catFilterBox);
+    var catOpts = [
+      { id: 'all', label: 'Todos los videos' },
+      { id: 'comunicacion', label: '🗣️ Comunicación' },
+      { id: 'productividad', label: '⚡ Productividad' },
+      { id: 'aprendizaje', label: '📊 Aprendizaje' },
+      { id: 'programacion', label: '💻 Programación' }
+    ];
+    catOpts.forEach(function (c) {
+      var b = el('button', 'chip' + (noteCatFilter === c.id ? ' sel' : ''), c.label);
+      b.type = 'button';
+      b.addEventListener('click', function () { noteCatFilter = c.id; renderNotesList(); });
+      catFilterBox.appendChild(b);
+    });
+
+    var tagsBox = $('n-tags'); clear(tagsBox);
+    var all = {};
+    state.notes.forEach(function (n) { n.tags.forEach(function (t) { all[t.toLowerCase()] = t; }); });
+    var keys = Object.keys(all).sort();
+    if (tagFilter && keys.indexOf(tagFilter) === -1) tagFilter = '';
+    if (keys.length) {
+      keys.forEach(function (k) {
+        var b = el('button', 'chip' + (tagFilter === k ? ' sel' : ''), '#' + all[k]); b.type = 'button';
+        b.addEventListener('click', function () { tagFilter = tagFilter === k ? '' : k; renderNotesList(); });
+        tagsBox.appendChild(b);
+      });
+    }
+    var q = $('n-search').value.trim().toLowerCase();
+    var list = state.notes.filter(function (n) {
+      if (noteCatFilter !== 'all' && validCat(n.cat) !== noteCatFilter) return false;
+      if (tagFilter && !n.tags.some(function (t) { return t.toLowerCase() === tagFilter; })) return false;
+      return !q || noteText(n).indexOf(q) !== -1;
+    }).sort(function (a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : b.created - a.created; });
+    var box = $('n-list'); clear(box);
+    if (!state.notes.length) { box.appendChild(el('div', 'empty', 'Aún no tienes videos guardados. Toca "＋ Nuevo video" para pegar un link y anotar sus pasos.')); return; }
+    if (!list.length) { box.appendChild(el('div', 'empty', 'No encontré videos con ese filtro o búsqueda.')); return; }
+
+    list.forEach(function (n) {
+      var c = el('div', 'note-card');
+      var top = el('div', 'nc-top');
+      var titleArea = el('div', '');
+      titleArea.appendChild(el('div', 'nc-title', n.title || 'Video sin título'));
+      var meta = el('div', 'nc-meta');
+      meta.appendChild(catBadge(n.cat));
+      meta.appendChild(document.createTextNode((n.channel ? n.channel + ' · ' : '') + shortDate(n.date)));
+      titleArea.appendChild(meta);
+      top.appendChild(titleArea);
+
+      var editBtn = el('button', 'btn-sec btn-sm', 'Editar'); editBtn.type = 'button';
+      editBtn.addEventListener('click', function () { openNote(n.id); });
+      top.appendChild(editBtn);
+      c.appendChild(top);
+
+      if (n.text) {
+        c.appendChild(el('p', 'nc-text', n.text.length > 160 ? n.text.slice(0, 160) + '…' : n.text));
+      }
+
+      if (n.steps.length) {
+        var spBox = el('div', 'nc-steps-preview');
+        n.steps.forEach(function (s) {
+          var sRow = el('div', 'nc-step-mini' + (s.done ? ' done' : ''));
+          var chk = el('button', 'chk', s.done ? '✓' : ''); chk.type = 'button';
+          chk.setAttribute('aria-label', 'Marcar paso: ' + s.text);
+          chk.addEventListener('click', function () {
+            s.done = !s.done; save(); render();
+          });
+          var stxt = el('span', '', s.text);
+          sRow.appendChild(chk); sRow.appendChild(stxt);
+          spBox.appendChild(sRow);
+        });
+        c.appendChild(spBox);
+      }
+
+      var actions = el('div', 'nc-actions');
+      if (n.url) {
+        var linkA = el('a', 'open-link', '▶ Ver video');
+        linkA.href = n.url; linkA.target = '_blank'; linkA.rel = 'noopener noreferrer';
+        actions.appendChild(linkA);
+      }
+      var badges = el('div', 'nc-badges');
+      n.tags.forEach(function (t) { badges.appendChild(el('span', 'chip', '#' + t)); });
+      if (n.steps.length) {
+        badges.appendChild(el('span', 'chip', '✅ ' + n.steps.filter(function (s) { return s.done; }).length + '/' + n.steps.length));
+      }
+      actions.appendChild(badges);
+      c.appendChild(actions);
+
+      box.appendChild(c);
+    });
+  }
+
+  function curNote() { return editId ? noteById(editId) : null; }
+  function noteEmpty(n) { return !n.title && !n.url && !n.channel && !n.text && !n.steps.length && !n.snips.length && !n.tags.length; }
+  function setSaved(msg) { $('e-saved').textContent = msg; }
+  function touch() { setSaved('Guardando…'); saveSoon(); setTimeout(function () { if (!saveTimer) setSaved('Guardado ✔'); }, 400); }
+
+  function updateOpenLink() {
+    var n = curNote(); if (!n) return;
+    var a = $('e-open'), v = $('e-url').value.trim();
+    if (n.url) { a.hidden = false; a.href = n.url; $('e-url-err').textContent = ''; }
+    else { a.hidden = true; a.removeAttribute('href'); $('e-url-err').textContent = v ? 'El enlace debe empezar con http:// o https://' : ''; }
+  }
+  function openNote(id) {
+    var n = noteById(id); if (!n) return;
+    editId = id;
+    $('e-title').value = n.title; $('e-cat').value = validCat(n.cat);
+    $('e-url').value = n.url; $('e-channel').value = n.channel;
+    $('e-date').value = n.date; $('e-tags').value = n.tags.join(', '); $('e-text').value = n.text;
+    $('e-step-new').value = ''; $('e-sn-label').value = ''; $('e-sn-code').value = '';
+    setSaved('');
+    $('notes-list-view').hidden = true; $('notes-edit-view').hidden = false;
+    updateOpenLink(); renderSteps(); renderSnips();
+    if (tab !== 'apuntes') showTab('apuntes');
+    window.scrollTo(0, 0);
+  }
+  function newNote() {
+    var n = { id: uid(), title: '', cat: 'comunicacion', url: '', channel: '', date: todayStr(), tags: [], text: '', steps: [], snips: [], created: Date.now() };
+    state.notes.push(n); openNote(n.id); $('e-title').focus();
+  }
+  function closeEditor() {
+    var n = curNote();
+    if (n && noteEmpty(n)) state.notes = state.notes.filter(function (x) { return x.id !== n.id; });
+    save(); editId = null;
+    $('notes-edit-view').hidden = true; $('notes-list-view').hidden = false;
+    render(); window.scrollTo(0, 0);
+  }
+
+  function addTaskFromStep(n, step, silent) {
+    var dup = state.tasks.some(function (t) { return t.date === today && t.note === n.id && t.text === step.text; });
+    if (dup) { if (!silent) toast('Ese paso ya está en tus tareas de hoy.'); return false; }
+    state.tasks.push({ id: uid(), text: step.text.slice(0, 200), date: today, done: false, note: n.id });
+    return true;
+  }
+
+  function renderSteps() {
+    var n = curNote(); var box = $('e-steps'); clear(box); if (!n) return;
+    if (!n.steps.length) box.appendChild(el('p', 'hint', 'Aún no hay pasos anotados. Escríbelos abajo para tenerlos a mano.'));
+    n.steps.forEach(function (s) {
+      var row = el('div', 'step' + (s.done ? ' done' : ''));
+      var chk = el('button', 'chk', s.done ? '✓' : ''); chk.type = 'button';
+      chk.setAttribute('role', 'checkbox'); chk.setAttribute('aria-checked', s.done ? 'true' : 'false'); chk.setAttribute('aria-label', 'Hecho: ' + s.text);
+      function toggle() { s.done = !s.done; touch(); renderSteps(); }
+      chk.addEventListener('click', toggle);
+      var tx = el('div', 's-text', s.text); tx.addEventListener('click', toggle);
+
+      var btns = el('div', 'step-btns');
+      var goTask = el('button', 'btn-sec btn-sm', '➜ Hoy'); goTask.type = 'button'; goTask.title = 'Agregar a tareas de hoy';
+      goTask.addEventListener('click', function () {
+        if (addTaskFromStep(n, s)) { save(); render(); toast('Agregado a tareas de hoy ✔'); }
+      });
+
+      var goReto = el('button', 'btn-warn btn-sm', '🎯 Reto'); goReto.type = 'button'; goReto.title = 'Convertir en reto diario';
+      goReto.addEventListener('click', function () {
+        if (addHabitFromStep(s.text, n.cat)) { save(); render(); toast('Convertido en reto diario 🎯'); }
+      });
+
+      var ed = el('button', 'del', '✎'); ed.type = 'button'; ed.setAttribute('aria-label', 'Editar paso');
+      ed.addEventListener('click', function () {
+        var v = prompt('Editar paso', s.text); if (v === null) return; v = v.trim().slice(0, 200);
+        if (!v) { toast('El paso no puede quedar vacío.'); return; } s.text = v; touch(); renderSteps();
+      });
+      var del = el('button', 'del', '✕'); del.type = 'button'; del.setAttribute('aria-label', 'Eliminar paso');
+      del.addEventListener('click', function () { n.steps = n.steps.filter(function (x) { return x.id !== s.id; }); touch(); renderSteps(); });
+
+      btns.appendChild(goTask); btns.appendChild(goReto); btns.appendChild(ed); btns.appendChild(del);
+      row.appendChild(chk); row.appendChild(tx); row.appendChild(btns);
+      box.appendChild(row);
+    });
+  }
+  function renderSnips() {
+    var n = curNote(); var box = $('e-snips'); clear(box); if (!n) return;
+    n.snips.forEach(function (s) {
+      var wrap = el('div', 'snip'); var head = el('div', 'snip-head');
+      head.appendChild(el('b', '', s.label || 'Nota'));
+      var cp = el('button', 'btn-sec btn-sm', 'Copiar'); cp.type = 'button';
+      cp.addEventListener('click', function () { copyText(s.code); });
+      var del = el('button', 'del', '✕'); del.type = 'button';
+      del.addEventListener('click', function () { n.snips = n.snips.filter(function (x) { return x.id !== s.id; }); touch(); renderSnips(); });
+      head.appendChild(cp); head.appendChild(del);
+      var pre = el('pre', 'code'); pre.textContent = s.code;
+      wrap.appendChild(head); wrap.appendChild(pre); box.appendChild(wrap);
+    });
+  }
+
+  /* ---------- Repaso ---------- */
+  function renderRepaso() {
+    var days = []; for (var i = 6; i >= 0; i--) days.push(addDays(today, -i));
+    var sts = days.map(dayStats);
+    var tDone = 0, hDone = 0, hTot = 0;
+    sts.forEach(function (s) { tDone += s.tasksDone; hDone += s.habitsDone; hTot += s.habits; });
+    var notesWeek = state.notes.filter(function (n) { return n.date >= days[0] && n.date <= days[6]; });
+    var box = $('rp-stats'); clear(box);
+    [['Tareas hechas', String(tDone)], ['Retos cumplidos', hTot ? hDone + ' de ' + hTot + ' (' + Math.round(hDone / hTot * 100) + '%)' : '—'],
+     ['Racha actual', streak() + (streak() === 1 ? ' día' : ' días')], ['Videos anotados', String(notesWeek.length)]].forEach(function (p) {
+      var d = el('div', 'stat'); d.appendChild(el('small', '', p[0])); d.appendChild(el('b', '', p[1])); box.appendChild(d);
+    });
+    var bars = $('rp-bars'); clear(bars);
+    days.forEach(function (ds, idx) {
+      var s = sts[idx], pct = s.total ? s.done / s.total * 100 : 0, d = parseDate(ds);
+      var col = el('div', 'rb' + (ds === today ? ' today' : ''));
+      col.appendChild(el('div', 'rb-val', s.total ? s.done + '/' + s.total : '–'));
+      var track = el('div', 'rb-track'), fill = el('div', 'rb-fill' + (s.total && s.done === s.total ? ' full' : ''));
+      fill.style.height = pct + '%'; track.appendChild(fill); col.appendChild(track);
+      var lab = el('div', 'rb-day'); lab.appendChild(el('b', '', String(d.getDate()))); lab.appendChild(document.createTextNode(DIAS_CORTOS[d.getDay()]));
+      col.appendChild(lab); bars.appendChild(col);
+    });
+    var nb = $('rp-notes'); clear(nb);
+    if (!notesWeek.length) nb.appendChild(el('div', 'empty', 'No anotaste videos esta semana.'));
+    notesWeek.sort(function (a, b) { return a.date < b.date ? 1 : -1; }).forEach(function (n) {
+      var b = el('button', 'li li-btn'); b.type = 'button';
+      b.appendChild(document.createTextNode(n.title || 'Sin título'));
+      b.appendChild(el('small', '', shortDate(n.date) + (n.steps.length ? ' · ' + n.steps.filter(function (s) { return s.done; }).length + '/' + n.steps.length + ' pasos practicados' : '')));
+      b.addEventListener('click', function () { showTab('apuntes'); openNote(n.id); });
+      nb.appendChild(b);
+    });
+    var rb = $('rp-refl'); clear(rb);
+    var rds = days.filter(function (d) { return state.refl[d]; }).reverse();
+    if (!rds.length) rb.appendChild(el('div', 'empty', 'Aún no escribiste cómo te fue. Hazlo en la pestaña Hoy.'));
+    rds.forEach(function (d) { var li = el('div', 'li', state.refl[d]); li.appendChild(el('small', '', longDate(d))); rb.appendChild(li); });
+  }
+
+  var rendering = false, pending = false;
+  function render() {
+    if (rendering) { pending = true; return; }
+    rendering = true;
+    try {
+      renderDatebar(); renderAnchor(); renderProgress(); renderTasks(); renderCarry(); renderHabitsToday();
+      renderChips($('h-chips-today')); renderChips($('h-chips')); renderReflection();
+      renderHabitsManage(); renderNotesList(); renderRepaso();
+    } finally { rendering = false; }
+    if (pending) { pending = false; render(); }
+  }
+
+  function showTab(name) {
+    tab = name;
+    try { localStorage.setItem(TKEY, name); } catch (e) {}
+    TABS.forEach(function (t) { $('tab-' + t).hidden = t !== name; });
+    var btns = document.querySelectorAll('.tab-btn');
+    for (var i = 0; i < btns.length; i++) btns[i].setAttribute('aria-selected', btns[i].dataset.tab === name ? 'true' : 'false');
+    $('datebar').hidden = name !== 'hoy';
+    window.scrollTo(0, 0);
+  }
+
+  /* ---------- Respaldo ---------- */
+  function exportData() {
+    flush();
+    var payload = { app: 'mis-tareas', version: 1, tasks: state.tasks, habits: state.habits, hlog: state.hlog, notes: state.notes, refl: state.refl };
+    var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    var url = URL.createObjectURL(blob), a = document.createElement('a');
+    a.href = url; a.download = 'mis-tareas-copia-' + todayStr() + '.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+    toast('Copia descargada ✔');
+  }
+  function importData(text) {
+    var data;
+    try { data = JSON.parse(text); } catch (e) { toast('El archivo no es válido.'); return; }
+    if (!data || typeof data !== 'object' || (!Array.isArray(data.tasks) && !Array.isArray(data.notes) && !Array.isArray(data.habits))) { toast('El archivo no es válido.'); return; }
+    var inc = cleanAll(data);
+    if (!inc.tasks.length && !inc.habits.length && !inc.notes.length && !Object.keys(inc.refl).length) { toast('La copia no tiene datos.'); return; }
+    if (!confirm('Se restaurarán ' + inc.tasks.length + ' tareas, ' + inc.habits.length + ' retos y ' + inc.notes.length + ' videos. ¿Continuar?')) return;
+    function merge(cur, add) { var by = {}; cur.forEach(function (x) { by[x.id] = x; }); add.forEach(function (x) { by[x.id] = x; }); return Object.keys(by).map(function (k) { return by[k]; }); }
+    state.tasks = merge(state.tasks, inc.tasks); state.habits = merge(state.habits, inc.habits).slice(0, 40); state.notes = merge(state.notes, inc.notes);
+    Object.keys(inc.hlog).forEach(function (d) { state.hlog[d] = state.hlog[d] || {}; Object.keys(inc.hlog[d]).forEach(function (h) { state.hlog[d][h] = inc.hlog[d][h]; }); });
+    Object.keys(inc.refl).forEach(function (d) { state.refl[d] = inc.refl[d]; });
+    save(); render(); toast('Datos restaurados ✔');
+  }
+
+  /* ---------- Eventos ---------- */
+  var tabBtns = document.querySelectorAll('.tab-btn');
+  for (var ti = 0; ti < tabBtns.length; ti++) { (function (b) { b.addEventListener('click', function () { showTab(b.dataset.tab); }); })(tabBtns[ti]); }
+  function setDate(d) { selDate = d; render(); }
+  $('d-prev').addEventListener('click', function () { setDate(addDays(selDate, -1)); });
+  $('d-next').addEventListener('click', function () { setDate(addDays(selDate, 1)); });
+  $('d-today').addEventListener('click', function () { today = todayStr(); setDate(today); });
+
+  $('t-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var inp = $('t-input'), v = inp.value.trim();
+    if (!v) { inp.focus(); return; }
+    state.tasks.push({ id: uid(), text: v.slice(0, 200), date: selDate, done: false, note: '' });
+    inp.value = ''; save(); render(); inp.focus();
+  });
+  $('carry-all').addEventListener('click', function () {
+    var moved = 0;
+    state.tasks.forEach(function (t) { if (!t.done && t.date < today) { t.date = today; moved++; } });
+    save(); render(); toast('Pasaste ' + moved + (moved === 1 ? ' tarea' : ' tareas') + ' a hoy ✔');
+  });
+
+  var reflTimer = null;
+  $('refl').addEventListener('input', function () {
+    var v = $('refl').value.slice(0, 1000).trim(), d = selDate;
+    if (v) state.refl[d] = v; else delete state.refl[d];
+    $('refl-saved').textContent = 'Guardando…'; clearTimeout(reflTimer);
+    saveSoon(); reflTimer = setTimeout(function () { $('refl-saved').textContent = 'Guardado ✔'; }, 400);
+  });
+
+  $('r-video-filter').addEventListener('change', function () {
+    retosVideoIdFilter = $('r-video-filter').value;
+    renderRetosVideoSteps();
+  });
+
+  $('h-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var err = $('h-error'), name = $('h-name').value.trim(), target = Math.round(Number($('h-target').value));
+    if (!name) { err.textContent = 'Escribe qué quieres practicar.'; $('h-name').focus(); return; }
+    if (!isFinite(target) || target < 1 || target > 100) { err.textContent = 'Las veces al día deben ser entre 1 y 100.'; return; }
+    if (state.habits.length >= 40) { err.textContent = 'Máximo 40 retos.'; return; }
+    err.textContent = '';
+    state.habits.push({
+      id: uid(),
+      name: name.slice(0, 60),
+      cat: validCat($('h-cat').value),
+      target: target,
+      unit: $('h-unit').value.trim().slice(0, 20),
+      days: newDays.slice(),
+      start: today
+    });
+    $('h-name').value = ''; $('h-unit').value = ''; $('h-target').value = '3';
+    save(); render(); toast('Reto creado ✔');
+  });
+
+  $('n-new').addEventListener('click', newNote);
+  $('n-search').addEventListener('input', renderNotesList);
+  $('e-back').addEventListener('click', closeEditor);
+  $('e-del').addEventListener('click', function () {
+    var n = curNote(); if (!n) return;
+    if (!confirm('¿Eliminar este video' + (n.title ? ' ("' + n.title + '")' : '') + '?')) return;
+    state.notes = state.notes.filter(function (x) { return x.id !== n.id; });
+    save(); editId = null; $('notes-edit-view').hidden = true; $('notes-list-view').hidden = false; render();
+  });
+  $('e-title').addEventListener('input', function () { var n = curNote(); if (n) { n.title = $('e-title').value.slice(0, 120); touch(); } });
+  $('e-cat').addEventListener('change', function () { var n = curNote(); if (n) { n.cat = validCat($('e-cat').value); touch(); } });
+  $('e-channel').addEventListener('input', function () { var n = curNote(); if (n) { n.channel = $('e-channel').value.slice(0, 60); touch(); } });
+  $('e-text').addEventListener('input', function () { var n = curNote(); if (n) { n.text = $('e-text').value.slice(0, 5000); touch(); } });
+  $('e-date').addEventListener('change', function () { var n = curNote(); if (n && validDate($('e-date').value)) { n.date = $('e-date').value; touch(); } });
+  $('e-url').addEventListener('input', function () {
+    var n = curNote(); if (!n) return;
+    var v = $('e-url').value.trim(); n.url = validUrl(v) ? v : ''; updateOpenLink(); touch();
+  });
+  $('e-url').addEventListener('change', function () {
+    var n = curNote(); if (!n) return;
+    var v = $('e-url').value.trim();
+    if (v && !/^[a-z][a-z0-9+.-]*:/i.test(v) && /^[\w-]+(\.[\w-]+)+(\/\S*)?$/.test(v)) { v = 'https://' + v; $('e-url').value = v; }
+    n.url = validUrl(v) ? v : ''; updateOpenLink(); touch();
+  });
+  $('e-tags').addEventListener('input', function () {
+    var n = curNote(); if (!n) return;
+    n.tags = cleanTags($('e-tags').value.split(',')); touch();
+  });
+  $('e-tags').addEventListener('change', function () { var n = curNote(); if (n) $('e-tags').value = n.tags.join(', '); });
+  $('e-step-add').addEventListener('click', function () {
+    var n = curNote(); if (!n) return;
+    var lines = $('e-step-new').value.split('\n').map(function (l) { return l.trim().slice(0, 200); }).filter(Boolean);
+    if (!lines.length) { toast('Escribe al menos un paso.'); $('e-step-new').focus(); return; }
+    if (n.steps.length + lines.length > 60) { toast('Máximo 60 pasos por video.'); return; }
+    lines.forEach(function (l) { n.steps.push({ id: uid(), text: l, done: false }); });
+    $('e-step-new').value = ''; touch(); renderSteps();
+  });
+  $('e-steps-all').addEventListener('click', function () {
+    var n = curNote(); if (!n) return;
+    var pend = n.steps.filter(function (s) { return !s.done; });
+    if (!pend.length) { toast(n.steps.length ? 'Ya marcaste todos los pasos.' : 'Primero agrega pasos.'); return; }
+    var added = 0; pend.forEach(function (s) { if (addTaskFromStep(n, s, true)) added++; });
+    if (!added) { toast('Esos pasos ya están en tus tareas de hoy.'); return; }
+    save(); render(); toast('Agregaste ' + added + (added === 1 ? ' tarea' : ' tareas') + ' a hoy ✔');
+  });
+  $('e-steps-habits').addEventListener('click', function () {
+    var n = curNote(); if (!n) return;
+    var pend = n.steps.filter(function (s) { return !s.done; });
+    if (!pend.length) { toast(n.steps.length ? 'Ya marcaste todos los pasos.' : 'Primero agrega pasos.'); return; }
+    var added = 0; pend.forEach(function (s) { if (addHabitFromStep(s.text, n.cat, true)) added++; });
+    if (!added) { toast('Esos pasos ya están en tus retos diarios.'); return; }
+    save(); render(); toast('Agregaste ' + added + (added === 1 ? ' reto diario' : ' retos diarios') + ' 🎯');
+  });
+
+  $('sn-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var n = curNote(); if (!n) return;
+    var code = $('e-sn-code').value.replace(/\s+$/, '');
+    if (!code.trim()) { toast('Escribe el comando o texto.'); $('e-sn-code').focus(); return; }
+    if (n.snips.length >= 30) { toast('Máximo 30 notas técnicas.'); return; }
+    n.snips.push({ id: uid(), label: $('e-sn-label').value.trim().slice(0, 60), code: code.slice(0, 3000) });
+    $('e-sn-label').value = ''; $('e-sn-code').value = ''; touch(); renderSnips();
+  });
+  $('e-git').addEventListener('click', function () {
+    var n = curNote(); if (!n) return;
+    if (n.snips.length + GIT_TEMPLATE.length > 30) { toast('No hay espacio.'); return; }
+    GIT_TEMPLATE.forEach(function (g) { n.snips.push({ id: uid(), label: g[0], code: g[1] }); });
+    touch(); renderSnips(); toast('Plantilla Git agregada ✔');
+  });
+
+  $('btn-export').addEventListener('click', exportData);
+  $('btn-import').addEventListener('click', function () { $('file-import').click(); });
+  $('file-import').addEventListener('change', function (e) {
+    var f = e.target.files && e.target.files[0]; e.target.value = ''; if (!f) return;
+    var r = new FileReader();
+    r.onload = function () { importData(String(r.result)); };
+    r.onerror = function () { toast('No pude leer el archivo.'); };
+    r.readAsText(f);
+  });
+
+  render();
+  showTab(tab);
+})();
+</script>
+</body>
+</html>
